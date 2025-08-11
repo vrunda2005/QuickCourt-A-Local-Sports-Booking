@@ -2,7 +2,7 @@ const Facility = require('../models/Facility');
 
 exports.createFacility = async (req, res) => {
   try {
-    const { name, location, description } = req.body;
+    const { name, location, description, sports, amenities } = req.body;
     if (!name || !location) {
       return res.status(400).json({ error: 'Name and location are required' });
     }
@@ -11,6 +11,8 @@ exports.createFacility = async (req, res) => {
       name,
       location,
       description,
+      sports,
+      amenities,
       imageUrl: req.file?.path,
       owner: req.user._id
     });
@@ -70,17 +72,35 @@ exports.deleteFacility = async (req, res) => {
 };
 
 exports.approveFacility = async (req, res) => {
-  const { id } = req.params;
-  const { status } = req.body; // 'approved' or 'rejected'
-  if (!['approved', 'rejected'].includes(status)) {
-    return res.status(400).json({ error: 'Invalid status' });
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    
+    if (!['approved', 'rejected'].includes(status)) {
+      return res.status(400).json({ error: 'Invalid status. Must be "approved" or "rejected"' });
+    }
+    
+    const facility = await Facility.findByIdAndUpdate(
+      id, 
+      { status }, 
+      { new: true }
+    ).populate('owner', 'name email');
+    
+    if (!facility) {
+      return res.status(404).json({ error: 'Facility not found' });
+    }
+    
+    res.json({ success: true, data: facility });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-  const facility = await Facility.findByIdAndUpdate(id, { status }, { new: true });
-  if (!facility) return res.status(404).json({ error: 'Facility not found' });
-  res.json({ success: true, data: facility });
 };
 
 exports.getPendingFacilities = async (_req, res) => {
-  const facilities = await Facility.find({ status: 'pending' });
-  res.json({ success: true, data: facilities });
+  try {
+    const facilities = await Facility.find({ status: 'pending' }).populate('owner', 'name email');
+    res.json({ success: true, data: facilities });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };

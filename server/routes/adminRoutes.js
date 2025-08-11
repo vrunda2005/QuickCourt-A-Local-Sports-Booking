@@ -6,11 +6,11 @@ const AdminController = require('../controllers/adminController');
 
 const router = express.Router();
 
-router.get('/stats', requireAuth, attachUser, requireRole(['Admin']), AdminController.getStats);
-router.put('/users/:id/role', requireAuth, attachUser, requireRole(['Admin']), AdminController.updateUserRole);
+   router.get('/stats', requireAuth(), attachUser, requireRole(['Admin']), AdminController.getStats);
+router.put('/users/:id/role', requireAuth(), attachUser, requireRole(['Admin']), AdminController.updateUserRole);
 
 // Promotion endpoint guarded by ADMIN_SECRET (not visible in UI except admin-unlock)
-router.post('/promote', requireAuth, attachUser, async (req, res) => {
+router.post('/promote', requireAuth(), attachUser, async (req, res) => {
   try {
     const { secret } = req.body;
     if (!secret || secret !== process.env.ADMIN_SECRET) {

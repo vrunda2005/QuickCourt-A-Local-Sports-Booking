@@ -12,6 +12,12 @@ const facilitySchema = new mongoose.Schema({
   description: {
     type: String
   },
+  sports: {
+    type: String
+  },
+  amenities: {
+    type: String
+  },
   imageUrl: {
     type: String
   },
