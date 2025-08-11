@@ -25,6 +25,29 @@ export type Facility = {
 };
 
 // Stats
+export const getAdminProfile = async () => {
+  return (await api.get("/admin/profile")).data;
+};
+export const getAdminStats = async () => {
+  return (await api.get("/admin/stats")).data;
+};
+export const getAdminRecentActions = async () => {
+  return (await api.get("/admin/recent-actions")).data;
+};
+
+export const getReports = async () => {
+  return (await api.get("/admin/reports")).data;
+};
+export const dismissReport = async (id: string) => {
+  return (await api.post(`/admin/reports/${id}/dismiss`)).data;
+};
+export const disableFacility = async (id: string) => {
+  return (await api.post(`/admin/facilities/${id}/disable`)).data;
+};
+export const enableFacility = async (id: string) => {
+  return (await api.post(`/admin/facilities/${id}/enable`)).data;
+};
+
 export const getOverview = async (): Promise<OverviewResponse> => {
   const r = await api.get("/admin/stats/overview");
   return r.data;

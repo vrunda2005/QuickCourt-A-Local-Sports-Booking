@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import AdminLayout from "../../components/Layouts/AdminLayout";
 import { getAllUsers, banUser, unbanUser, getUserBookings, type AdminUser } from "../../api/admin";
+import { Search, Ban, CheckCircle, Clock } from "lucide-react";
 
 export default function UserManagement() {
   const [search, setSearch] = useState("");
@@ -11,25 +12,16 @@ export default function UserManagement() {
   const [history, setHistory] = useState<Array<{ _id: string; date: string; slot: string; price: number; status: string }> | null>(null);
   const [historyLoading, setHistoryLoading] = useState(false);
 
-  // normalize various API shapes into an array
-  const normalizeToArray = <T,>(v: any): T[] => {
-    if (!v) return [];
-    if (Array.isArray(v)) return v;
-    if (Array.isArray(v.data)) return v.data;
-    if (Array.isArray(v.users)) return v.users;
-    if (Array.isArray(v.items)) return v.items;
-    return [];
-  };
+  const normalizeToArray = <T,>(v: any): T[] =>
+    Array.isArray(v) ? v : Array.isArray(v?.data) ? v.data : Array.isArray(v?.users) ? v.users : [];
 
   useEffect(() => {
     (async () => {
       try {
         setLoading(true);
         const data = await getAllUsers();
-        // debug: uncomment if you need to inspect the shape
-        // console.log("getAllUsers result:", data);
         setUsers(normalizeToArray<AdminUser>(data));
-      } catch (_) {
+      } catch {
         setUsers([]);
       } finally {
         setLoading(false);
@@ -37,11 +29,9 @@ export default function UserManagement() {
     })();
   }, []);
 
-  const safeArray = <T,>(v: any): T[] => Array.isArray(v) ? v : [];
-
   const filteredUsers = useMemo(() => {
     const q = search.toLowerCase();
-    return safeArray<AdminUser>(users).filter(u => {
+    return users.filter(u => {
       const matchesSearch =
         (u.fullName ?? "").toLowerCase().includes(q) ||
         (u.email ?? "").toLowerCase().includes(q);
@@ -59,9 +49,7 @@ export default function UserManagement() {
         await banUser(user._id);
         setUsers(prev => prev.map(u => u._id === user._id ? { ...u, isBanned: true } : u));
       }
-    } catch (e) {
-      // optional: console.error("toggleBan error", e);
-    }
+    } catch {}
   };
 
   const openHistory = async (user: AdminUser) => {
@@ -70,7 +58,7 @@ export default function UserManagement() {
     try {
       const data = await getUserBookings(user._id);
       setHistory(normalizeToArray(data));
-    } catch (_) {
+    } catch {
       setHistory([]);
     } finally {
       setHistoryLoading(false);
@@ -79,16 +67,20 @@ export default function UserManagement() {
 
   return (
     <AdminLayout>
-      <h1 className="text-2xl font-semibold mb-4">User Management</h1>
+      <h1 className="text-2xl font-semibold mb-6">User Management</h1>
 
+      {/* Filters */}
       <div className="flex flex-col md:flex-row gap-4 mb-6">
-        <input
-          type="text"
-          placeholder="Search by name or email"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="border rounded-lg px-3 py-2 flex-1"
-        />
+        <div className="relative flex-1">
+          <Search size={16} className="absolute left-3 top-3 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search by name or email"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="border rounded-lg pl-10 pr-3 py-2 w-full"
+          />
+        </div>
         <select
           value={filterRole}
           onChange={(e) => setFilterRole(e.target.value)}
@@ -101,6 +93,7 @@ export default function UserManagement() {
         </select>
       </div>
 
+      {/* Table */}
       <div className="overflow-x-auto bg-white rounded-lg shadow">
         {loading ? (
           <div className="p-4">Loading…</div>
@@ -117,33 +110,36 @@ export default function UserManagement() {
             </thead>
             <tbody>
               {filteredUsers.map(user => (
-                <tr key={user._id} className="border-b">
+                <tr key={user._id} className="border-b hover:bg-gray-50">
                   <td className="p-3">{user.fullName}</td>
                   <td className="p-3">{user.email}</td>
                   <td className="p-3 capitalize">{user.role}</td>
-                  <td className="p-3 capitalize">
+                  <td className="p-3">
                     <span
                       className={`px-2 py-1 rounded-full text-xs ${
                         !user.isBanned ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
                       }`}
                     >
-                      {user.isBanned ? "banned" : "active"}
+                      {user.isBanned ? "Banned" : "Active"}
                     </span>
                   </td>
-                  <td className="p-3">
+                  <td className="p-3 flex gap-2">
                     <button
                       onClick={() => toggleBan(user)}
-                      className={`px-3 py-1 rounded ${
-                        !user.isBanned ? "bg-red-500 text-white hover:bg-red-600" : "bg-green-500 text-white hover:bg-green-600"
+                      className={`px-3 py-1 rounded flex items-center gap-1 ${
+                        !user.isBanned
+                          ? "bg-red-500 text-white hover:bg-red-600"
+                          : "bg-green-500 text-white hover:bg-green-600"
                       }`}
                     >
+                      {!user.isBanned ? <Ban size={14} /> : <CheckCircle size={14} />}
                       {!user.isBanned ? "Ban" : "Unban"}
                     </button>
                     <button
                       onClick={() => openHistory(user)}
-                      className="ml-2 px-3 py-1 rounded border"
+                      className="px-3 py-1 rounded border flex items-center gap-1"
                     >
-                      View History
+                      <Clock size={14} /> History
                     </button>
                   </td>
                 </tr>
@@ -153,12 +149,18 @@ export default function UserManagement() {
         )}
       </div>
 
+      {/* Booking History Modal */}
       {historyUserId && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Booking History</h3>
-              <button className="px-3 py-1 border rounded" onClick={() => { setHistoryUserId(null); setHistory(null); }}>Close</button>
+              <button
+                className="px-3 py-1 border rounded"
+                onClick={() => { setHistoryUserId(null); setHistory(null); }}
+              >
+                Close
+              </button>
             </div>
             {historyLoading ? (
               <div>Loading…</div>
