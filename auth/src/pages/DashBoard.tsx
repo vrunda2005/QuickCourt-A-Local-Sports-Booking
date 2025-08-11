@@ -14,12 +14,21 @@ const DashBoard = () => {
         console.log(res.data);
     };
 
+    const fetchToken = async () => {
+        const token = await getToken(); // gets JWT from Clerk
+        console.log("JWT Token:", token);
+        alert(token); // You can copy it from here
+        console.log(token);
+
+    };
     if (!isSignedIn) return <p>Please sign in to continue.</p>;
 
     return (
         <div>
             <h2>Welcome, user {userId}</h2>
             <button onClick={fetchData}>Fetch Protected Data</button>
+            <h1>Welcome!</h1>
+            <button onClick={fetchToken}>Get JWT Token </button>
         </div>
     );
 };
