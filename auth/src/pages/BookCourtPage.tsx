@@ -2,38 +2,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { SignedIn, SignedOut, SignInButton } from "@clerk/clerk-react";
-import axios from 'axios';
 
 /* ------------------------- Types ------------------------- */
 type PricingRow = { start: string; end: string; price: number };
 type Pricing = { day: "Mon–Fri" | "Sat–Sun"; rows: PricingRow[] };
-
-interface BackendCourt {
-  _id: string;
-  name: string;
-  sportType: string;
-  pricePerHour: number;
-  operatingHours: string;
-  amenities?: string;
-  images?: string[];
-  facility: string;
-}
-
-interface BackendFacility {
-  _id: string;
-  name: string;
-  location: string;
-  description?: string;
-  sports?: string;
-  amenities?: string;
-  imageUrl?: string;
-  status: string;
-}
-
 type SportBlock = {
   code: string;         // "badminton"
   name: string;         // "Badminton"
-  courts: BackendCourt[];     // Real court data from backend
+  courts: string[];     // ["Court 1", "Court 2"]
   indoor: boolean;
   surface?: string;
   pricePerHour: number; // used for live total
@@ -54,111 +30,114 @@ type Booking = { court: string; startISO: string; endISO: string };
 async function fetchVenueLite(id: string): Promise<VenueLite> {
   try {
     // Fetch facility details
-    const facilityRes = await axios.get(`http://localhost:5000/api/facilities/${id}`);
-    const facility: BackendFacility = facilityRes.data.data;
-    
-    if (!facility) {
+    const facilityRes = await fetch(`http://localhost:5000/api/facilities/${id}`);
+    const facility = await facilityRes.json();
+
+    if (!facility.data) {
       throw new Error('Facility not found');
     }
 
     // Fetch courts for this facility
-    const courtsRes = await axios.get(`http://localhost:5000/api/courts?facility=${id}`);
-    const courts: BackendCourt[] = courtsRes.data.data || [];
+    const courtsRes = await fetch(`http://localhost:5000/api/courts?facility=${id}`);
+    const courts = await courtsRes.json();
+    const courtsData = courts.data || [];
 
     // Group courts by sport type
-    const courtsBySport = courts.reduce((acc, court) => {
+    const courtsBySport = courtsData.reduce((acc: any, court: any) => {
       if (!acc[court.sportType]) {
         acc[court.sportType] = [];
       }
-      acc[court.sportType].push(court);
+      acc[court.sportType].push(court.name);
       return acc;
-    }, {} as Record<string, BackendCourt[]>);
+    }, {});
 
     // Create sport blocks
-    const sports: SportBlock[] = Object.entries(courtsBySport).map(([sportType, sportCourts]) => ({
+    const sports: SportBlock[] = Object.entries(courtsBySport).map(([sportType, sportCourts]: [string, any]) => ({
       code: sportType.toLowerCase(),
       name: sportType,
       courts: sportCourts,
       indoor: true, // Default to indoor
       surface: "Professional", // Default surface
-      pricePerHour: sportCourts[0]?.pricePerHour || 500,
+      pricePerHour: 500, // Default price, you can fetch from court data
       pricing: [
         {
           day: "Mon–Fri",
           rows: [
-            { start: "06:00 AM", end: "10:00 PM", price: sportCourts[0]?.pricePerHour || 500 },
+            { start: "06:00 AM", end: "10:00 PM", price: 500 },
           ],
         },
         {
           day: "Sat–Sun",
           rows: [
-            { start: "06:00 AM", end: "10:00 PM", price: (sportCourts[0]?.pricePerHour || 500) + 100 },
+            { start: "06:00 AM", end: "10:00 PM", price: 600 },
           ],
         },
       ],
     }));
 
-    // If no courts exist, create a default sport block
-    if (sports.length === 0) {
-      sports.push({
-        code: "general",
-        name: "General",
-        courts: [],
-        indoor: true,
-        surface: "Professional",
-        pricePerHour: 500,
-        pricing: [
-          {
-            day: "Mon–Fri",
-            rows: [{ start: "06:00 AM", end: "10:00 PM", price: 500 }],
-          },
-          {
-            day: "Sat–Sun",
-            rows: [{ start: "06:00 AM", end: "10:00 PM", price: 600 }],
-          },
-        ],
-      });
-    }
-    
     return {
-      id: facility._id,
-      name: facility.name,
-      location: facility.location,
+      id,
+      name: facility.data.name,
+      location: facility.data.location,
       rating: 4.5, // Default rating
-      sports,
+      sports: sports.length > 0 ? sports : [
+        {
+          code: "general",
+          name: "General",
+          courts: ["Court 1"],
+          indoor: true,
+          surface: "Professional",
+          pricePerHour: 500,
+        }
+      ],
     };
   } catch (error) {
-    console.error('Failed to fetch venue:', error);
-    throw error;
+    console.error('Error fetching venue:', error);
+    // Fallback to mock data
+    return {
+      id,
+      name: "SBR Badminton",
+      location: "Satellite, Jodhpur Village",
+      rating: 4.5,
+      sports: [
+        {
+          code: "badminton",
+          name: "Badminton",
+          courts: ["Table 1", "Table 2", "Table 3"],
+          indoor: true,
+          surface: "Wooden/Synthetic",
+          pricePerHour: 600,
+        },
+        {
+          code: "tennis",
+          name: "Tennis",
+          courts: ["Court A", "Court B"],
+          indoor: false,
+          surface: "Synthetic",
+          pricePerHour: 900,
+        },
+      ],
+    };
   }
 }
 
-// Existing bookings for the selected date (mock for now)
+// Existing bookings for the selected date (mock)
 async function fetchBookingsForDate(venueId: string, dateISO: string): Promise<Booking[]> {
-  try {
-    // TODO: Implement real booking API call
-    // const res = await axios.get(`http://localhost:5000/api/bookings?facility=${venueId}&date=${dateISO}`);
-    // return res.data.data || [];
-    
-    // Mock data for now
-    await new Promise((r) => setTimeout(r, 200));
-    const d = dateISO.slice(0, 10);
-    return [
-      {
-        court: "Court 1",
-        startISO: `${d}T13:00:00.000Z`,
-        endISO: `${d}T14:00:00.000Z`,
-      },
-      {
-        court: "Court A",
-        startISO: `${d}T15:00:00.000Z`,
-        endISO: `${d}T17:00:00.000Z`,
-      },
-    ];
-  } catch (error) {
-    console.error('Failed to fetch bookings:', error);
-    return [];
-  }
+  await new Promise((r) => setTimeout(r, 200));
+  // Format yyyy-mm-dd; we'll return clashing windows for "Table 1"
+  const d = dateISO.slice(0, 10);
+  return [
+    {
+      court: "Table 1",
+      startISO: `${d}T13:00:00.000Z`,
+      endISO: `${d}T14:00:00.000Z`,
+    },
+    {
+      court: "Court A",
+      startISO: `${d}T15:00:00.000Z`,
+      endISO: `${d}T17:00:00.000Z`,
+    },
+  ];
 }
 
 /* ------------------------- Helpers ------------------------- */
@@ -202,7 +181,6 @@ export default function BookCourtPage() {
 
   const [venue, setVenue] = useState<VenueLite | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   const [sportCode, setSportCode] = useState<string>("");
   const [date, setDate] = useState<string>(todayLocalDateInput());
@@ -216,25 +194,14 @@ export default function BookCourtPage() {
   useEffect(() => {
     let alive = true;
     setLoading(true);
-    setError(null);
-    
     fetchVenueLite(id).then((v) => {
       if (!alive) return;
       setVenue(v);
       const first = v.sports[0];
-      if (first) {
-        setSportCode(first.code);
-        if (first.courts.length > 0) {
-          setCourt(first.courts[0].name);
-        }
-      }
-      setLoading(false);
-    }).catch((err) => {
-      if (!alive) return;
-      setError(err.message || 'Failed to load venue');
+      setSportCode(first.code);
+      setCourt(first.courts[0] ?? "");
       setLoading(false);
     });
-    
     return () => {
       alive = false;
     };
@@ -261,11 +228,11 @@ export default function BookCourtPage() {
   // reselect default court when sport changes
   useEffect(() => {
     if (!sport) return;
-    if (sport.courts.length > 0 && !sport.courts.find(c => c.name === court)) {
-      setCourt(sport.courts[0].name);
+    if (!sport.courts.includes(court)) {
+      setCourt(sport.courts[0] ?? "");
     }
     setStartTime(""); // reset after sport change
-  }, [sportCode, sport, court]);
+  }, [sportCode]); // eslint-disable-line
 
   // disabled logic for each slot
   const disabledSlots = useMemo(() => {
@@ -330,36 +297,18 @@ export default function BookCourtPage() {
       price
     };
 
-    nav('/payment', { 
+    nav('/payment', {
       state: { bookingDetails },
-      replace: true 
+      replace: true
     });
   };
 
-  if (loading) {
+  if (loading || !venue || !sport) {
     return (
       <div className="mx-auto max-w-5xl px-4 py-10">
         <div className="mb-4 h-6 w-48 animate-pulse rounded bg-gray-100" />
         <div className="rounded-2xl border p-5">
           <div className="h-60 animate-pulse rounded-2xl bg-gray-100" />
-        </div>
-      </div>
-    );
-  }
-
-  if (error || !venue || !sport) {
-    return (
-      <div className="mx-auto max-w-5xl px-4 py-10">
-        <div className="rounded-2xl border p-8 text-center">
-          <div className="mb-2 text-3xl">❌</div>
-          <div className="text-lg font-medium">Failed to load venue</div>
-          <p className="mt-1 text-gray-500">{error || 'Venue not found'}</p>
-          <button
-            onClick={() => nav('/venues')}
-            className="mt-4 rounded-xl border px-4 py-2 text-sm hover:bg-gray-50"
-          >
-            Back to Venues
-          </button>
         </div>
       </div>
     );
@@ -437,9 +386,8 @@ export default function BookCourtPage() {
                       type="button"
                       disabled={disabled}
                       onClick={() => setStartTime(t)}
-                      className={`h-9 rounded-xl border text-xs ${
-                        active ? "border-black bg-black text-white" : "hover:bg-gray-50"
-                      } ${disabled ? "cursor-not-allowed opacity-40" : ""}`}
+                      className={`h-9 rounded-xl border text-xs ${active ? "border-black bg-black text-white" : "hover:bg-gray-50"
+                        } ${disabled ? "cursor-not-allowed opacity-40" : ""}`}
                     >
                       {t}
                     </button>
@@ -481,31 +429,22 @@ export default function BookCourtPage() {
                 }}
                 className="w-full rounded-xl border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-gray-900"
               >
-                {sport.courts.length > 0 ? (
-                  sport.courts.map((c) => (
-                    <option key={c._id} value={c.name}>
-                      {c.name} - ₹{c.pricePerHour}/hr
-                    </option>
-                  ))
-                ) : (
-                  <option value="">No courts available</option>
-                )}
+                {sport.courts.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
               </select>
               <div className="mt-2 flex flex-wrap gap-1">
-                {sport.courts.length > 0 ? (
-                  sport.courts.map((c) => (
-                    <span
-                      key={c._id}
-                      className={`rounded-full border px-2 py-0.5 text-[11px] ${
-                        c.name === court ? "border-black" : "text-gray-600"
+                {sport.courts.map((c) => (
+                  <span
+                    key={c}
+                    className={`rounded-full border px-2 py-0.5 text-[11px] ${c === court ? "border-black" : "text-gray-600"
                       }`}
-                    >
-                      {c.name} (₹{c.pricePerHour}/hr)
-                    </span>
-                  ))
-                ) : (
-                  <span className="text-xs text-gray-500">No courts configured for this sport</span>
-                )}
+                  >
+                    {c}
+                  </span>
+                ))}
               </div>
             </div>
           </div>
@@ -517,9 +456,8 @@ export default function BookCourtPage() {
             <button
               disabled={!canContinue}
               onClick={handleContinue}
-              className={`w-full rounded-xl px-4 py-3 text-sm font-medium shadow-sm transition ${
-                canContinue ? "bg-emerald-600 text-white hover:opacity-90" : "cursor-not-allowed bg-gray-200 text-gray-500"
-              }`}
+              className={`w-full rounded-xl px-4 py-3 text-sm font-medium shadow-sm transition ${canContinue ? "bg-emerald-600 text-white hover:opacity-90" : "cursor-not-allowed bg-gray-200 text-gray-500"
+                }`}
             >
               Continue to Payment – {INR(price)}
             </button>
