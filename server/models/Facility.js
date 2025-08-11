@@ -9,6 +9,7 @@ const facilitySchema = new mongoose.Schema({
   pricePerHour: { type: Number, required: true },
   amenities: [String],
   photos: [String],
+  isFlagged: { type: Boolean, default: false },
   status: { type: String, enum: ["pending", "approved", "rejected"], default: "pending" }
 }, { timestamps: true });
 
