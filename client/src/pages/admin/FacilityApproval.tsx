@@ -9,26 +9,19 @@ export default function FacilityApprovalPage() {
   const [facilities, setFacilities] = useState<Facility[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Facility | null>(null);
-const loadData = () => {
-  setLoading(true);
-  getPendingFacilities()
-    .then((res) => {
-      if (Array.isArray(res)) {
-        setFacilities(res);
-      } else if (res && Array.isArray(res.facilities)) {
-        setFacilities(res.facilities);
-      } else {
-        console.error("Unexpected API format:", res);
-        setFacilities([]);
-      }
-    })
-    .catch((e) => {
-      console.error("getPendingFacilities error:", e);
-      setFacilities([]);
-    })
-    .finally(() => setLoading(false));
-};
 
+  const loadData = () => {
+    setLoading(true);
+    getPendingFacilities()
+      .then((res) => {
+        setFacilities(Array.isArray(res) ? res : []);
+      })
+      .catch((e) => {
+        console.error("getPendingFacilities error:", e);
+        setFacilities([]);
+      })
+      .finally(() => setLoading(false));
+  };
 
   useEffect(() => {
     loadData();
@@ -57,9 +50,9 @@ const loadData = () => {
               {facilities.map((f) => (
                 <tr key={f._id} className="border-t">
                   <td className="px-4 py-2">{f.name}</td>
-                  <td className="px-4 py-2">{f.ownerName}</td>
+                  <td className="px-4 py-2">{f.ownerId}</td>
                   <td className="px-4 py-2">{f.location}</td>
-                  <td className="px-4 py-2">{new Date(f.submittedAt).toLocaleDateString()}</td>
+                  <td className="px-4 py-2">{new Date(f.createdAt).toLocaleDateString()}</td>
                   <td className="px-4 py-2">
                     <button
                       className="px-3 py-1 text-sm bg-blue-500 text-white rounded"

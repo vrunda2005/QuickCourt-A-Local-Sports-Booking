@@ -60,7 +60,7 @@ const AppRoutes = () => {
 
                     {/* Admin Routes */}
                     <Route path="/admin/dashboard" element={<SignedIn><AdminDashboard /></SignedIn>} />
-                    <Route path="/admin/facility-approval" element={<FacilityApproval />} />
+                    <Route path="/admin/facility-approval" element={<SignedIn><FacilityApproval /></SignedIn>} />
                     <Route path="/admin/users" element={<SignedIn><UserManagement /></SignedIn>} />
                     <Route path="/admin/reports" element={<SignedIn><Reports /></SignedIn>} />
                     <Route path="/admin/profile" element={<SignedIn><AdminProfile /></SignedIn>} />

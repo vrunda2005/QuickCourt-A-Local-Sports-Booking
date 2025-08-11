@@ -42,10 +42,10 @@ export default function FacilityModal({ facility, onClose, onAction }: Props) {
     <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-lg">
         <h2 className="text-xl font-semibold mb-4">{facility.name}</h2>
-        <p className="text-sm text-gray-500 mb-2">Owner: {facility.ownerName}</p>
+        <p className="text-sm text-gray-500 mb-2">Owner ID: {facility.ownerId}</p>
         <p className="text-sm text-gray-500 mb-4">{facility.location}</p>
         <div className="grid grid-cols-3 gap-2 mb-4">
-          {facility.photos.map((p) => (
+          {(facility.photos || []).map((p) => (
             <img key={p} src={p} alt="Facility" className="w-full h-24 object-cover rounded" />
           ))}
         </div>
