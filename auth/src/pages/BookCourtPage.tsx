@@ -6,6 +6,7 @@ import { SignedIn, SignedOut, SignInButton } from "@clerk/clerk-react";
 /* ------------------------- Types ------------------------- */
 type PricingRow = { start: string; end: string; price: number };
 type Pricing = { day: "Mon–Fri" | "Sat–Sun"; rows: PricingRow[] };
+
 type SportBlock = {
   code: string;         // "badminton"
   name: string;         // "Badminton"

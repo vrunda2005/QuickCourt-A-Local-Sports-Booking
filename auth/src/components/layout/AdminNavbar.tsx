@@ -1,7 +1,8 @@
+import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { UserButton, useUser } from '@clerk/clerk-react';
 
-const AdminNavbar = () => {
+const AdminNavbar: React.FC = () => {
     const { user } = useUser();
     const location = useLocation();
 
@@ -23,8 +24,8 @@ const AdminNavbar = () => {
                         <Link
                             to="/admin/dashboard"
                             className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive('/admin/dashboard') && location.pathname === '/admin/dashboard'
-                                ? 'text-red-600 bg-red-50'
-                                : 'text-gray-700 hover:text-red-600 hover:bg-red-50'
+                                    ? 'text-red-600 bg-red-50'
+                                    : 'text-gray-700 hover:text-red-600 hover:bg-red-50'
                                 }`}
                         >
                             Dashboard
@@ -32,8 +33,8 @@ const AdminNavbar = () => {
                         <Link
                             to="/admin/facilities"
                             className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive('/admin/facilities')
-                                ? 'text-red-600 bg-red-50'
-                                : 'text-gray-700 hover:text-red-600 hover:bg-red-50'
+                                    ? 'text-red-600 bg-red-50'
+                                    : 'text-gray-700 hover:text-red-600 hover:bg-red-50'
                                 }`}
                         >
                             Facility Approval
@@ -41,8 +42,8 @@ const AdminNavbar = () => {
                         <Link
                             to="/admin/users"
                             className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive('/admin/users')
-                                ? 'text-red-600 bg-red-50'
-                                : 'text-gray-700 hover:text-red-600 hover:bg-red-50'
+                                    ? 'text-red-600 bg-red-50'
+                                    : 'text-gray-700 hover:text-red-600 hover:bg-red-50'
                                 }`}
                         >
                             User Management
@@ -50,8 +51,8 @@ const AdminNavbar = () => {
                         <Link
                             to="/admin/reports"
                             className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive('/admin/reports')
-                                ? 'text-red-600 bg-red-50'
-                                : 'text-gray-700 hover:text-red-600 hover:bg-red-50'
+                                    ? 'text-red-600 bg-red-50'
+                                    : 'text-gray-700 hover:text-red-600 hover:bg-red-50'
                                 }`}
                         >
                             Reports
@@ -61,7 +62,7 @@ const AdminNavbar = () => {
                     {/* User Menu */}
                     <div className="flex items-center space-x-4">
                         <span className="hidden sm:block text-sm text-gray-700">
-                            Admin: {user?.firstName || 'User'}
+                            Admin: {user?.firstName || user?.emailAddresses?.[0]?.emailAddress || 'Administrator'}
                         </span>
                         <UserButton afterSignOutUrl="/" />
                     </div>

@@ -1,9 +1,10 @@
+import React from 'react';
 import { useRole } from '../../context/RoleContext';
 import UserNavbar from './UserNavbar';
 import FacilityOwnerNavbar from './FacilityOwnerNavbar';
 import AdminNavbar from './AdminNavbar';
 
-const Navbar = () => {
+const Navbar: React.FC = () => {
   const { role, loading } = useRole();
 
   // Show loading state while determining role

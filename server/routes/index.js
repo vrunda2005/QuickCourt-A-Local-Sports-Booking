@@ -1,20 +1,19 @@
 const express = require('express');
-const adminRoutes = require('./adminRoutes');
-const facilityRoutes = require('./facilityRoutes');
-const bookingRoutes = require('./bookingRoutes');
 const userRoutes = require('./userRoutes');
+const facilityRoutes = require('./facilityRoutes');
 const courtRoutes = require('./courtRoutes');
+const bookingRoutes = require('./bookingRoutes');
 const itemRoutes = require('./itemRoutes');
-
+const adminRoutes = require('./adminRoutes');
 
 const router = express.Router();
 
-router.use('/admin', adminRoutes);
-router.use('/facilities', facilityRoutes);
-router.use('/bookings', bookingRoutes);
+// API routes
 router.use('/users', userRoutes);
+router.use('/facilities', facilityRoutes);
 router.use('/courts', courtRoutes);
+router.use('/bookings', bookingRoutes);
 router.use('/items', itemRoutes);
-
+router.use('/admin', adminRoutes);
 
 module.exports = router;

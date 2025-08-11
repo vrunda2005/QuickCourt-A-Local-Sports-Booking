@@ -1,7 +1,8 @@
+import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { UserButton, useUser } from '@clerk/clerk-react';
 
-const UserNavbar = () => {
+const UserNavbar: React.FC = () => {
   const { user } = useUser();
   const location = useLocation();
 

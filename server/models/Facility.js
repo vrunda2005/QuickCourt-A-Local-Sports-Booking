@@ -12,6 +12,8 @@ const facilitySchema = new mongoose.Schema({
   description: {
     type: String
   },
+  pricePerHour: { type: Number, required: true },
+
   sports: {
     type: String
   },
