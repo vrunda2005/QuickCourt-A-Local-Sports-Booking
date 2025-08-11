@@ -1,4 +1,3 @@
-// utils/clerk.js
 const { ClerkExpressRequireAuth } = require('@clerk/clerk-sdk-node');
 
 const requireAuth = ClerkExpressRequireAuth({
@@ -6,10 +5,11 @@ const requireAuth = ClerkExpressRequireAuth({
   apiKey: process.env.CLERK_SECRET_KEY,
 });
 /* i added */
+
+exports.requireAuth = requireAuth; 
 exports.verifyAdmin = (req, res, next) => {
   if (req.auth && req.auth.role === "admin") {
     return next();
   }
   return res.status(403).json({ message: "Access denied" });
 };
-

@@ -25,6 +25,10 @@ app.use((err, req, res, next) => {
 app.use('/api/items', itemRoutes);
 
 const PORT = process.env.PORT || 5000;
+app.get('/health', (req, res) => {
+  res.json({ ok: true, time: new Date().toISOString() });
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
