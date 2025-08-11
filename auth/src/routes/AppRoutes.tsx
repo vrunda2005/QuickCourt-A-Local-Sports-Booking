@@ -10,6 +10,7 @@ import Dashboard from '../pages/DashBoard';
 import AddItem from '../pages/AddItem';
 import Venues from '../pages/user/Venues';
 import VenueDetails from '../pages/user/VenueDetails';
+import BookCourtPage from '../pages/BookCourtPage';
 import MyBookings from '../pages/user/MyBookings';
 import Profile from '../pages/profile/Profile';
 import { useRole } from '../context/RoleContext';
@@ -47,6 +48,7 @@ const AppRoutes = () => {
                     <Route path="/add-item" element={<SignedIn><AddItem /></SignedIn>} />
                     <Route path="/venues" element={<Venues />} />
                     <Route path="/venues/:id" element={<VenueDetails />} />
+                    <Route path="/venues/:id/book" element={<BookCourtPage />} />
                     <Route path="/my-bookings" element={<SignedIn><MyBookings /></SignedIn>} />
                     <Route path="/profile" element={<SignedIn><Profile /></SignedIn>} />
                 </Routes>

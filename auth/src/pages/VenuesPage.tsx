@@ -1,25 +1,104 @@
 import { useEffect, useMemo, useState, useDeferredValue } from "react";
-import axios from 'axios';
-import { Link } from 'react-router-dom';
-import VenueCard, { type Venue } from "../../components/VenueCard";
-import VenueFilters, { type VenueFiltersValue } from "../../components/VenueFilters";
+import VenueCard, { type Venue } from "../components/VenueCard";
+import VenueFilters, { type VenueFiltersValue } from "../components/VenueFilters";
 
 /* ---------------------------------------------------------
-   Types
+   Mock data: replace with your API fetch if you have one
    --------------------------------------------------------- */
 
-interface BackendFacility {
-  _id: string;
-  name: string;
-  location: string;
-  description?: string;
-  sports?: string;
-  amenities?: string;
-  imageUrl?: string;
-  status: string;
-  owner: string;
-  createdAt: string;
-}
+const SEED: Venue[] = [
+  {
+    id: "v1",
+    name: "SBR Badminton",
+    sport: "Badminton",
+    location: "Vaishnodevi Cir",
+    rating: 4.6,
+    reviews: 26,
+    indoor: true,
+    pricePerHour: 350,
+    image:
+      "https://images.unsplash.com/photo-1543166145-43227661d0e8?q=80&w=1600&auto=format&fit=crop",
+    budget: true,
+  },
+  {
+    id: "v2",
+    name: "Skyline Racquet",
+    sport: "Tennis",
+    location: "Navrangpura",
+    rating: 4.7,
+    reviews: 61,
+    indoor: false,
+    pricePerHour: 700,
+    image:
+      "https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?q=80&w=1600&auto=format&fit=crop",
+  },
+  {
+    id: "v3",
+    name: "Prime Sports Arena",
+    sport: "Football",
+    location: "Science City",
+    rating: 4.5,
+    reviews: 39,
+    indoor: false,
+    pricePerHour: 500,
+    image:
+      "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=1600&auto=format&fit=crop",
+    budget: true,
+  },
+  {
+    id: "v4",
+    name: "Court House",
+    sport: "Basketball",
+    location: "Drive-In Rd",
+    rating: 4.4,
+    reviews: 18,
+    indoor: true,
+    pricePerHour: 600,
+    image:
+      "https://images.unsplash.com/photo-1518065890281-ffa4c77c7f5d?q=80&w=1600&auto=format&fit=crop",
+  },
+  {
+    id: "v5",
+    name: "Aqua Dome",
+    sport: "Swimming",
+    location: "Sabarmati",
+    rating: 4.8,
+    reviews: 54,
+    indoor: true,
+    pricePerHour: 450,
+    image:
+      "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?q=80&w=1600&auto=format&fit=crop",
+  },
+  {
+    id: "v6",
+    name: "Pitch Perfect",
+    sport: "Cricket",
+    location: "Thaltej",
+    rating: 4.3,
+    reviews: 21,
+    indoor: false,
+    pricePerHour: 550,
+    image:
+      "https://images.unsplash.com/photo-1521417531039-75e91486eae4?q=80&w=1600&auto=format&fit=crop",
+  },
+];
+
+// Duplicate a bit so pagination looks real
+const VENUES: Venue[] = [
+  ...SEED,
+  ...SEED.map((v, i) => ({
+    ...v,
+    id: `dup-${i}-a`,
+    name: `${v.name} ${i + 1}`,
+    pricePerHour: v.pricePerHour + (i % 4) * 50,
+    rating: Math.min(5, v.rating + ((i % 3) * 0.1)),
+  })),
+  ...SEED.map((v, i) => ({
+    ...v,
+    id: `dup-${i}-b`,
+    name: `${v.name} ${i + 7}`,
+  })),
+];
 
 /* ---------------------------------------------------------
    Page
@@ -42,55 +121,22 @@ export default function VenuesPage() {
   // Mobile filter sheet
   const [sheetOpen, setSheetOpen] = useState(false);
 
-  // Real data loading
+  // Fake loading to demo skeletons (remove if you fetch)
   const [loading, setLoading] = useState(true);
-  const [facilities, setFacilities] = useState<BackendFacility[]>([]);
-  const [error, setError] = useState<string | null>(null);
-
-  // Load facilities from backend
   useEffect(() => {
-    const fetchFacilities = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const res = await axios.get('http://localhost:5000/api/facilities');
-        setFacilities(res.data.data || []);
-      } catch (err) {
-        console.error('Failed to fetch facilities:', err);
-        setError('Failed to load venues. Please try again.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchFacilities();
+    const id = setTimeout(() => setLoading(false), 500); // quick shimmer
+    return () => clearTimeout(id);
   }, []);
-
-  // Transform backend data to frontend format
-  const venues: Venue[] = useMemo(() => {
-    return facilities.map(facility => ({
-      id: facility._id,
-      name: facility.name,
-      sport: facility.sports || 'Multi-Sport',
-      location: facility.location,
-      rating: 4.5, // Default rating for now
-      reviews: Math.floor(Math.random() * 50) + 10, // Mock reviews for now
-      indoor: true, // Default to indoor for now
-      pricePerHour: Math.floor(Math.random() * 400) + 200, // Mock pricing for now
-      image: facility.imageUrl || 'https://images.unsplash.com/photo-1543166145-43227661d0e8?q=80&w=1600&auto=format&fit=crop',
-      budget: Math.random() > 0.5, // Random budget flag
-    }));
-  }, [facilities]);
 
   // Sports list for dropdown
   const sports = useMemo(
-    () => Array.from(new Set(venues.map((v) => v.sport))),
-    [venues]
+    () => Array.from(new Set(VENUES.map((v) => v.sport))),
+    []
   );
 
   // Filtering & sorting
   const results = useMemo(() => {
-    let res = venues.slice();
+    let res = VENUES.slice();
 
     const q = deferredSearch.trim().toLowerCase();
     if (q) {
@@ -125,7 +171,7 @@ export default function VenuesPage() {
     }
 
     return res;
-  }, [filters.sport, filters.indoor, filters.maxPrice, filters.minRating, filters.sort, deferredSearch, venues]);
+  }, [filters.sport, filters.indoor, filters.maxPrice, filters.minRating, filters.sort, deferredSearch]);
 
   // Pagination
   const [page, setPage] = useState(1);
@@ -133,26 +179,6 @@ export default function VenuesPage() {
   const totalPages = Math.max(1, Math.ceil(results.length / pageSize));
   useEffect(() => setPage(1), [filters, deferredSearch]); // reset page when filters change
   const slice = results.slice((page - 1) * pageSize, page * pageSize);
-
-  if (error) {
-    return (
-      <div className="mx-auto min-h-screen w-full max-w-7xl px-4 sm:px-6">
-        <div className="mt-10 grid place-items-center">
-          <div className="w-full max-w-md rounded-2xl border border-dashed p-8 text-center">
-            <div className="mb-2 text-3xl">❌</div>
-            <div className="text-sm font-medium">Failed to load venues</div>
-            <p className="mt-1 text-xs text-gray-500">{error}</p>
-            <button
-              onClick={() => window.location.reload()}
-              className="mt-4 rounded-xl border px-3 py-2 text-sm hover:bg-gray-50"
-            >
-              Try Again
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="mx-auto min-h-screen w-full max-w-7xl px-4 sm:px-6">
@@ -223,6 +249,7 @@ export default function VenuesPage() {
           {/* Meta row */}
           <div className="mb-3 hidden items-center justify-between sm:flex">
             <div className="text-sm text-gray-600">{results.length} venues found</div>
+            {/* the select above handles sort for desktop; you could keep another here if you prefer */}
           </div>
 
           {/* Grid */}
@@ -403,6 +430,3 @@ function Pager({
     </div>
   );
 }
-
-
-

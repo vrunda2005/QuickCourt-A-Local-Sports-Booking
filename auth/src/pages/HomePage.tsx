@@ -1,4 +1,5 @@
-import { useMemo, useState, useEffect } from "react";
+// src/pages/HomePage.tsx
+import { useMemo, useState } from "react";
 import {
   SignedIn,
   SignedOut,
@@ -7,11 +8,10 @@ import {
   UserButton,
   useUser,
 } from "@clerk/clerk-react";
-import axios from 'axios';
 
-import VenueCarousel from "../../components/VenueCarousal";
-import PopularSportsRail from "../../components/PopularSportsRail";
-import SportsCarousel from "../../components/SportsCarousel";
+import VenueCarousel from "../components/VenueCarousal";
+import PopularSportsRail from "../components/PopularSportsRail";
+import SportsCarousel from "../components/SportsCarousel";
 
 type Venue = {
   id: string;
@@ -26,16 +26,60 @@ type Venue = {
   image: string;
 };
 
-interface BackendFacility {
-  _id: string;
-  name: string;
-  location: string;
-  description?: string;
-  sports?: string;
-  amenities?: string;
-  imageUrl?: string;
-  status: string;
-}
+const VENUES: Venue[] = [
+  {
+    id: "v1",
+    name: "SBR Badminton",
+    sport: "Badminton",
+    location: "Vaishnodevi Cir",
+    rating: 4.6,
+    reviews: 26,
+    indoor: true,
+    budget: true,
+    pricePerHour: "$8",
+    image:
+      "https://images.unsplash.com/photo-1543166145-43227661d0e8?q=80&w=1600&auto=format&fit=crop",
+  },
+  {
+    id: "v2",
+    name: "Skyline Racquet",
+    sport: "Tennis",
+    location: "Navrangpura",
+    rating: 4.7,
+    reviews: 61,
+    indoor: false,
+    budget: false,
+    pricePerHour: "$14",
+    image:
+      "https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?q=80&w=1600&auto=format&fit=crop",
+  },
+  {
+    id: "v3",
+    name: "Prime Sports Arena",
+    sport: "Football",
+    location: "Science City",
+    rating: 4.5,
+    reviews: 39,
+    indoor: false,
+    budget: true,
+    pricePerHour: "$10",
+    image:
+      "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=1600&auto=format&fit=crop",
+  },
+  {
+    id: "v4",
+    name: "Court House",
+    sport: "Basketball",
+    location: "Drive-In Rd",
+    rating: 4.4,
+    reviews: 18,
+    indoor: true,
+    budget: false,
+    pricePerHour: "$12",
+    image:
+      "https://images.unsplash.com/photo-1518065890281-ffa4c77c7f5d?q=80&w=1600&auto=format&fit=crop",
+  },
+];
 
 const HERO_IMAGES = [
   "https://images.unsplash.com/photo-1517649763962-0c623066013b?q=80&w=1600&auto=format&fit=crop",
@@ -47,53 +91,17 @@ const HERO_IMAGES = [
 export default function HomePage() {
   const { user } = useUser();
   const [query, setQuery] = useState("");
-  const [facilities, setFacilities] = useState<BackendFacility[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  // Load facilities from backend
-  useEffect(() => {
-    const fetchFacilities = async () => {
-      try {
-        setLoading(true);
-        const res = await axios.get('http://localhost:5000/api/facilities');
-        setFacilities(res.data.data || []);
-      } catch (error) {
-        console.error('Failed to fetch facilities:', error);
-        setFacilities([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchFacilities();
-  }, []);
-
-  // Transform backend data to frontend format
-  const venues: Venue[] = useMemo(() => {
-    return facilities.map(facility => ({
-      id: facility._id,
-      name: facility.name,
-      sport: facility.sports || 'Multi-Sport',
-      location: facility.location,
-      rating: 4.5, // Default rating for now
-      reviews: Math.floor(Math.random() * 50) + 10, // Mock reviews for now
-      indoor: true, // Default to indoor for now
-      pricePerHour: `₹${Math.floor(Math.random() * 400) + 200}`, // Mock pricing for now
-      image: facility.imageUrl || 'https://images.unsplash.com/photo-1543166145-43227661d0e8?q=80&w=1600&auto=format&fit=crop',
-      budget: Math.random() > 0.5, // Random budget flag
-    }));
-  }, [facilities]);
 
   const filtered = useMemo(() => {
-    if (!query.trim()) return venues;
+    if (!query.trim()) return VENUES;
     const q = query.toLowerCase();
-    return venues.filter(
+    return VENUES.filter(
       (v) =>
         v.name.toLowerCase().includes(q) ||
         v.location.toLowerCase().includes(q) ||
         v.sport.toLowerCase().includes(q)
     );
-  }, [query, venues]);
+  }, [query]);
 
   return (
     <div className="mx-auto min-h-screen w-full max-w-7xl px-4 sm:px-6">
@@ -156,35 +164,8 @@ export default function HomePage() {
       <section className="mt-8 sm:mt-10">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-base font-semibold">Book Venues</h2>
-          {loading && <span className="text-sm text-gray-500">Loading venues...</span>}
         </div>
-        {loading ? (
-          <div className="flex gap-4 overflow-x-auto pb-2">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="min-w-[280px] animate-pulse rounded-2xl border border-gray-200 bg-white shadow-sm">
-                <div className="h-32 w-full rounded-t-2xl bg-gray-100" />
-                <div className="space-y-3 p-3">
-                  <div className="h-3 w-1/2 rounded bg-gray-100" />
-                  <div className="h-2 w-1/3 rounded bg-gray-100" />
-                  <div className="flex gap-2">
-                    <div className="h-5 w-14 rounded-full bg-gray-100" />
-                    <div className="h-5 w-14 rounded-full bg-gray-100" />
-                  </div>
-                  <div className="flex gap-2 pt-1">
-                    <div className="h-9 flex-1 rounded-xl bg-gray-100" />
-                    <div className="h-9 flex-1 rounded-xl bg-gray-100" />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : venues.length > 0 ? (
-          <VenueCarousel venues={filtered} />
-        ) : (
-          <div className="text-center py-8 text-gray-500">
-            No venues available at the moment.
-          </div>
-        )}
+        <VenueCarousel venues={filtered} />
       </section>
 
       {/* Popular Sports */}
@@ -199,6 +180,3 @@ export default function HomePage() {
     </div>
   );
 }
-
-
-

@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { SignedIn, SignedOut, SignInButton } from "@clerk/clerk-react";
-import axios from 'axios';
 
 /* ----------------------------------------------------------
    Types
@@ -48,88 +47,83 @@ type VenueDetail = {
    ---------------------------------------------------------- */
 
 async function fetchVenueById(id: string): Promise<VenueDetail | null> {
-  try {
-    const res = await axios.get(`http://localhost:5000/api/facilities/${id}`);
-    const facility = res.data.data;
-    
-    if (!facility) return null;
-    
-    // Transform backend data to frontend format
-    return {
-      id: facility._id,
-      name: facility.name,
-      location: facility.location,
-      rating: 4.5, // Default rating for now
-      reviewsCount: 0, // Default review count for now
-      images: facility.imageUrl ? [facility.imageUrl] : [
-        "https://images.unsplash.com/photo-1543166145-43227661d0e8?q=80&w=1600&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1584275141642-4640d23d8c0d?q=80&w=1600&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1521417531039-75e91486eae4?q=80&w=1600&auto=format&fit=crop",
-      ],
-      amenities: facility.amenities ? facility.amenities.split(',').map(a => a.trim()) : [
-        "Parking",
-        "Locker Room",
-        "Washroom",
-        "Drinking Water",
-        "CCTV Surveillance",
-        "First Aid",
-      ],
-      about: facility.description ? [facility.description] : [
-        "Premium wooden & synthetic flooring courts.",
-        "Non-marking shoes mandatory.",
-        "Coaching available on prior request.",
-      ],
-      address: facility.location,
-      hours: { open: "7:00 AM", close: "11:00 PM", note: "Open all days" },
-      sports: [
-        {
-          code: "badminton",
-          name: "Badminton",
-          courts: ["Court 1", "Court 2", "Court 3"],
-          surface: "Wooden / Synthetic",
-          indoor: true,
-          pricing: [
-            {
-              day: "Mon–Fri",
-              rows: [
-                { start: "05:00 AM", end: "07:00 AM", price: 500 },
-                { start: "07:00 PM", end: "10:00 PM", price: 600 },
-              ],
-            },
-            {
-              day: "Sat–Sun",
-              rows: [
-                { start: "05:00 AM", end: "10:00 PM", price: 650 },
-              ],
-            },
-          ],
-        },
-        {
-          code: "tennis",
-          name: "Tennis",
-          courts: ["Court A", "Court B"],
-          indoor: false,
-          surface: "Synthetic",
-          pricing: [
-            {
-              day: "Mon–Fri",
-              rows: [
-                { start: "06:00 AM", end: "09:00 AM", price: 700 },
-                { start: "06:00 PM", end: "10:00 PM", price: 800 },
-              ],
-            },
-            {
-              day: "Sat–Sun",
-              rows: [{ start: "06:00 AM", end: "10:00 PM", price: 900 }],
-            },
-          ],
-        },
-      ],
-    };
-  } catch (error) {
-    console.error('Failed to fetch venue:', error);
-    return null;
-  }
+  // Simulate latency
+  await new Promise((r) => setTimeout(r, 400));
+
+  // Replace this with real API response
+  if (!id) return null;
+  return {
+    id,
+    name: "SBR Badminton",
+    location: "Satellite, Jodhpur Village",
+    rating: 4.5,
+    reviewsCount: 68,
+    images: [
+      "https://images.unsplash.com/photo-1543166145-43227661d0e8?q=80&w=1600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1584275141642-4640d23d8c0d?q=80&w=1600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1521417531039-75e91486eae4?q=80&w=1600&auto=format&fit=crop",
+    ],
+    amenities: [
+      "Parking",
+      "Locker Room",
+      "Washroom",
+      "Drinking Water",
+      "CCTV Surveillance",
+      "First Aid",
+    ],
+    about: [
+      "Premium wooden & synthetic flooring courts.",
+      "Non-marking shoes mandatory.",
+      "Coaching available on prior request.",
+    ],
+    address:
+      "Plot 23, Rajyog Road, Near XYZ Mall, Satellite, Ahmedabad 380015",
+    hours: { open: "7:00 AM", close: "11:00 PM", note: "Open all days" },
+    sports: [
+      {
+        code: "badminton",
+        name: "Badminton",
+        courts: ["Court 1", "Court 2", "Court 3"],
+        surface: "Wooden / Synthetic",
+        indoor: true,
+        pricing: [
+          {
+            day: "Mon–Fri",
+            rows: [
+              { start: "05:00 AM", end: "07:00 AM", price: 500 },
+              { start: "07:00 PM", end: "10:00 PM", price: 600 },
+            ],
+          },
+          {
+            day: "Sat–Sun",
+            rows: [
+              { start: "05:00 AM", end: "10:00 PM", price: 650 },
+            ],
+          },
+        ],
+      },
+      {
+        code: "tennis",
+        name: "Tennis",
+        courts: ["Court A", "Court B"],
+        indoor: false,
+        surface: "Synthetic",
+        pricing: [
+          {
+            day: "Mon–Fri",
+            rows: [
+              { start: "06:00 AM", end: "09:00 AM", price: 700 },
+              { start: "06:00 PM", end: "10:00 PM", price: 800 },
+            ],
+          },
+          {
+            day: "Sat–Sun",
+            rows: [{ start: "06:00 AM", end: "10:00 PM", price: 900 }],
+          },
+        ],
+      },
+    ],
+  };
 }
 
 /* ----------------------------------------------------------
@@ -187,7 +181,7 @@ export default function VenueDetailsPage() {
           <div className="mb-2 text-3xl">🤷</div>
           <div className="text-sm font-medium">Venue not found</div>
           <p className="mt-1 text-xs text-gray-500">
-            The venue you're looking for doesn't exist or was removed.
+            The venue you’re looking for doesn’t exist or was removed.
           </p>
           <Link to="/venues" className="mt-4 inline-block rounded-xl border px-3 py-2 text-sm hover:bg-gray-50">
             Back to venues
@@ -471,6 +465,3 @@ const SAMPLE_REVIEWS: Review[] = [
     text: "Great experience. Will book again!",
   },
 ];
-
-
-

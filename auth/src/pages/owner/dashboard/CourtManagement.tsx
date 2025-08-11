@@ -1,24 +1,65 @@
 import { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useAuth } from '@clerk/clerk-react';
 
-const CourtManagement = () => {
-    const [courts, setCourts] = useState<any[]>([]);
-    const [newCourt, setNewCourt] = useState({ name: '', sport: '', price: 0, hours: '' });
+type Court = {
+    _id: string;
+    name: string;
+    sportType: string;
+    pricePerHour: number;
+    operatingHours: string;
+};
+
+const CourtManagement = ({ facilityId }: { facilityId: string }) => {
+    const [courts, setCourts] = useState<Court[]>([]);
+    const [newCourt, setNewCourt] = useState({ name: '', sportType: '', pricePerHour: 0, operatingHours: '' });
+    const { getToken } = useAuth();
+
+    const load = async () => {
+        try {
+            const token = await getToken();
+            const res = await axios.get(`http://localhost:5000/api/courts/facility/${facilityId}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setCourts(res.data.data || []);
+        } catch (err) {
+            setCourts([]);
+        }
+    };
 
     useEffect(() => {
-        setCourts([
-            { id: 1, name: 'Court 1', sport: 'Tennis', price: 20, hours: '9AM-9PM' },
-            { id: 2, name: 'Court 2', sport: 'Basketball', price: 25, hours: '10AM-8PM' },
-        ]);
-    }, []);
+        if (facilityId) load();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [facilityId]);
 
     const handleAddCourt = async (e: React.FormEvent) => {
         e.preventDefault();
-        setCourts([...courts, { ...newCourt, id: courts.length + 1 }]);
-        setNewCourt({ name: '', sport: '', price: 0, hours: '' });
+        try {
+            const token = await getToken();
+            const payload = { ...newCourt, facility: facilityId };
+            const res = await axios.post(
+                `http://localhost:5000/api/courts`,
+                payload,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setCourts((prev) => [...prev, res.data.data]);
+            setNewCourt({ name: '', sportType: '', pricePerHour: 0, operatingHours: '' });
+        } catch (err) {
+            // noop
+        }
     };
 
-    const handleDelete = async (id: number) => {
-        setCourts(courts.filter(court => court.id !== id));
+    const handleDelete = async (courtId: string) => {
+        try {
+            const token = await getToken();
+            await axios.delete(
+                `http://localhost:5000/api/courts/${courtId}`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setCourts((prev) => prev.filter(c => c._id !== courtId));
+        } catch (err) {
+            // noop
+        }
     };
 
     return (
@@ -38,14 +79,13 @@ const CourtManagement = () => {
                     </thead>
                     <tbody>
                         {courts.map(court => (
-                            <tr key={court.id}>
+                            <tr key={court._id}>
                                 <td className="p-2">{court.name}</td>
-                                <td className="p-2">{court.sport}</td>
-                                <td className="p-2">${court.price}</td>
-                                <td className="p-2">{court.hours}</td>
+                                <td className="p-2">{court.sportType}</td>
+                                <td className="p-2">${court.pricePerHour}</td>
+                                <td className="p-2">{court.operatingHours}</td>
                                 <td className="p-2">
-                                    <button className="text-blue-500 mr-2">Edit</button>
-                                    <button onClick={() => handleDelete(court.id)} className="text-red-500">Delete</button>
+                                    <button onClick={() => handleDelete(court._id)} className="text-red-500">Delete</button>
                                 </td>
                             </tr>
                         ))}
@@ -59,15 +99,15 @@ const CourtManagement = () => {
                 </div>
                 <div className="mb-4">
                     <label className="block font-semibold">Sport Type</label>
-                    <input type="text" className="w-full p-2 border rounded" value={newCourt.sport} onChange={(e) => setNewCourt({ ...newCourt, sport: e.target.value })} />
+                    <input type="text" className="w-full p-2 border rounded" value={newCourt.sportType} onChange={(e) => setNewCourt({ ...newCourt, sportType: e.target.value })} />
                 </div>
                 <div className="mb-4">
                     <label className="block font-semibold">Price per Hour</label>
-                    <input type="number" className="w-full p-2 border rounded" value={newCourt.price} onChange={(e) => setNewCourt({ ...newCourt, price: parseFloat(e.target.value) })} />
+                    <input type="number" className="w-full p-2 border rounded" value={newCourt.pricePerHour} onChange={(e) => setNewCourt({ ...newCourt, pricePerHour: parseFloat(e.target.value) || 0 })} />
                 </div>
                 <div className="mb-4">
                     <label className="block font-semibold">Operating Hours</label>
-                    <input type="text" className="w-full p-2 border rounded" value={newCourt.hours} onChange={(e) => setNewCourt({ ...newCourt, hours: e.target.value })} />
+                    <input type="text" className="w-full p-2 border rounded" value={newCourt.operatingHours} onChange={(e) => setNewCourt({ ...newCourt, operatingHours: e.target.value })} />
                 </div>
                 <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">Add Court</button>
             </form>
@@ -76,6 +116,3 @@ const CourtManagement = () => {
 };
 
 export default CourtManagement;
-
-
-
