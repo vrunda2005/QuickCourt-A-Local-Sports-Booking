@@ -1,6 +1,5 @@
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { SignedIn } from '@clerk/clerk-react';
-import Navbar from '../components/layout/Navbar';
 import Home from '../pages/user/Home';
 import SignInPage from '../pages/auth/SignInPage';
 import { SignUpPage } from '../pages/auth/SignUpPage';
@@ -40,28 +39,32 @@ const AppRoutes = () => {
     }, [role, loading, navigate, location.pathname]);
 
     return (
-        <>
-            <Navbar />
-            <main style={{ padding: '1rem' }}>
-                <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/sign-in/*" element={<SignInPage />} />
-                    <Route path="/sign-up/*" element={<SignUpPage />} />
-                    <Route path="/post-signup" element={<SignedIn><PostSignUpPage /></SignedIn>} />
-                    <Route path="/admin-unlock" element={<SignedIn><AdminUnlock /></SignedIn>} />
-                    <Route path="/admin/dashboard" element={<SignedIn><AdminDashboard /></SignedIn>} />
-                    <Route path="/owner/dashboard/*" element={<SignedIn><OwnerDashboard /></SignedIn>} />
-                    <Route path="/dashboard" element={<SignedIn><Dashboard /></SignedIn>} />
-                    <Route path="/add-item" element={<SignedIn><AddItem /></SignedIn>} />
-                    <Route path="/venues" element={<Venues />} />
-                    <Route path="/venues/:id" element={<VenueDetails />} />
-                    <Route path="/venues/:id/book" element={<BookCourtPage />} />
-                    <Route path="/payment" element={<SignedIn><PaymentPage /></SignedIn>} />
-                    <Route path="/my-bookings" element={<SignedIn><MyBookings /></SignedIn>} />
-                    <Route path="/profile" element={<SignedIn><Profile /></SignedIn>} />
-                </Routes>
-            </main>
-        </>
+        <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/sign-in/*" element={<SignInPage />} />
+            <Route path="/sign-up/*" element={<SignUpPage />} />
+            <Route path="/post-signup" element={<SignedIn><PostSignUpPage /></SignedIn>} />
+            <Route path="/admin-unlock" element={<SignedIn><AdminUnlock /></SignedIn>} />
+
+            {/* Admin Routes */}
+            <Route path="/admin/dashboard" element={<SignedIn><AdminDashboard /></SignedIn>} />
+            <Route path="/admin/facilities" element={<SignedIn><AdminDashboard /></SignedIn>} />
+            <Route path="/admin/users" element={<SignedIn><AdminDashboard /></SignedIn>} />
+            <Route path="/admin/reports" element={<SignedIn><AdminDashboard /></SignedIn>} />
+
+            {/* Owner Routes */}
+            <Route path="/owner/dashboard/*" element={<SignedIn><OwnerDashboard /></SignedIn>} />
+
+            {/* User Routes */}
+            <Route path="/dashboard" element={<SignedIn><Dashboard /></SignedIn>} />
+            <Route path="/add-item" element={<SignedIn><AddItem /></SignedIn>} />
+            <Route path="/venues" element={<Venues />} />
+            <Route path="/venues/:id" element={<VenueDetails />} />
+            <Route path="/venues/:id/book" element={<BookCourtPage />} />
+            <Route path="/payment" element={<SignedIn><PaymentPage /></SignedIn>} />
+            <Route path="/my-bookings" element={<SignedIn><MyBookings /></SignedIn>} />
+            <Route path="/profile" element={<SignedIn><Profile /></SignedIn>} />
+        </Routes>
     );
 };
 
