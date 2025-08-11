@@ -11,6 +11,7 @@ import AddItem from '../pages/AddItem';
 import Venues from '../pages/user/Venues';
 import VenueDetails from '../pages/user/VenueDetails';
 import BookCourtPage from '../pages/BookCourtPage';
+import PaymentPage from '../pages/PaymentPage';
 import MyBookings from '../pages/user/MyBookings';
 import Profile from '../pages/profile/Profile';
 import { useRole } from '../context/RoleContext';
@@ -23,12 +24,18 @@ const AppRoutes = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-
     useEffect(() => {
         if (!loading && location.pathname === "/") {
-            if (role === 'Admin') navigate('/admin/dashboard');
-            else if (role === 'FacilityOwner') navigate('/owner/dashboard');
-            else if (role === 'User') navigate('/venues');
+            // Only redirect if user is authenticated and has a role
+            if (role && role !== null) {
+                if (role === 'Admin') {
+                    navigate('/admin/dashboard');
+                } else if (role === 'FacilityOwner') {
+                    navigate('/owner/dashboard');
+                } else if (role === 'User') {
+                    navigate('/venues');
+                }
+            }
         }
     }, [role, loading, navigate, location.pathname]);
 
@@ -49,10 +56,10 @@ const AppRoutes = () => {
                     <Route path="/venues" element={<Venues />} />
                     <Route path="/venues/:id" element={<VenueDetails />} />
                     <Route path="/venues/:id/book" element={<BookCourtPage />} />
+                    <Route path="/payment" element={<SignedIn><PaymentPage /></SignedIn>} />
                     <Route path="/my-bookings" element={<SignedIn><MyBookings /></SignedIn>} />
                     <Route path="/profile" element={<SignedIn><Profile /></SignedIn>} />
                 </Routes>
-
             </main>
         </>
     );

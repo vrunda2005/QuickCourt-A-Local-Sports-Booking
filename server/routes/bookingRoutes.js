@@ -6,6 +6,9 @@ const BookingController = require('../controllers/bookingController');
 
 const router = express.Router();
 
+// Create Razorpay order: only User role
+router.post('/create-order', requireAuth(), attachUser, requireRole(['User']), BookingController.createRazorpayOrder);
+
 // Create and cancel bookings: only User role
 router.post('/', requireAuth(), attachUser, requireRole(['User']), BookingController.createBooking);
 router.delete('/:id', requireAuth(), attachUser, requireRole(['User']), BookingController.cancelBooking);

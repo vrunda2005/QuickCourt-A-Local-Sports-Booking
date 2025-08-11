@@ -308,7 +308,7 @@ export default function BookCourtPage() {
 
   const canContinue = Boolean(sport && date && startTime && court);
 
-  /* Handle submit (go to mock payment) */
+  /* Handle submit (go to payment page) */
   const handleContinue = () => {
     if (!venue || !sport || !canContinue) return;
 
@@ -317,19 +317,23 @@ export default function BookCourtPage() {
     end.setHours(end.getHours() + durationHrs);
     const endLocalISO = toLocalISO(end);
 
-    // here you'd call your API to create a pending booking / payment session
-    console.log("BOOK", {
+    // Navigate to payment page with booking details
+    const bookingDetails = {
       venueId: venue.id,
+      venueName: venue.name,
       sport: sport.name,
       court,
       durationHrs,
-      startLocalISO,
-      endLocalISO,
-      price,
-    });
+      startTime: startLocalISO,
+      endTime: endLocalISO,
+      date,
+      price
+    };
 
-    // Navigate to your checkout screen or success page
-    nav("/dashboard"); // replace with /checkout if you build it
+    nav('/payment', { 
+      state: { bookingDetails },
+      replace: true 
+    });
   };
 
   if (loading) {
