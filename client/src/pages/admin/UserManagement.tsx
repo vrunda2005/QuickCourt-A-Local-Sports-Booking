@@ -11,11 +11,24 @@ export default function UserManagement() {
   const [history, setHistory] = useState<Array<{ _id: string; date: string; slot: string; price: number; status: string }> | null>(null);
   const [historyLoading, setHistoryLoading] = useState(false);
 
+  // normalize various API shapes into an array
+  const normalizeToArray = <T,>(v: any): T[] => {
+    if (!v) return [];
+    if (Array.isArray(v)) return v;
+    if (Array.isArray(v.data)) return v.data;
+    if (Array.isArray(v.users)) return v.users;
+    if (Array.isArray(v.items)) return v.items;
+    return [];
+  };
+
   useEffect(() => {
     (async () => {
       try {
+        setLoading(true);
         const data = await getAllUsers();
-        setUsers(data);
+        // debug: uncomment if you need to inspect the shape
+        // console.log("getAllUsers result:", data);
+        setUsers(normalizeToArray<AdminUser>(data));
       } catch (_) {
         setUsers([]);
       } finally {
@@ -24,10 +37,14 @@ export default function UserManagement() {
     })();
   }, []);
 
+  const safeArray = <T,>(v: any): T[] => Array.isArray(v) ? v : [];
+
   const filteredUsers = useMemo(() => {
     const q = search.toLowerCase();
-    return users.filter(u => {
-      const matchesSearch = u.fullName?.toLowerCase().includes(q) || u.email?.toLowerCase().includes(q);
+    return safeArray<AdminUser>(users).filter(u => {
+      const matchesSearch =
+        (u.fullName ?? "").toLowerCase().includes(q) ||
+        (u.email ?? "").toLowerCase().includes(q);
       const matchesRole = filterRole === "all" || u.role === filterRole;
       return matchesSearch && matchesRole;
     });
@@ -42,8 +59,8 @@ export default function UserManagement() {
         await banUser(user._id);
         setUsers(prev => prev.map(u => u._id === user._id ? { ...u, isBanned: true } : u));
       }
-    } catch (_) {
-      // noop
+    } catch (e) {
+      // optional: console.error("toggleBan error", e);
     }
   };
 
@@ -52,7 +69,7 @@ export default function UserManagement() {
     setHistoryLoading(true);
     try {
       const data = await getUserBookings(user._id);
-      setHistory(data);
+      setHistory(normalizeToArray(data));
     } catch (_) {
       setHistory([]);
     } finally {
