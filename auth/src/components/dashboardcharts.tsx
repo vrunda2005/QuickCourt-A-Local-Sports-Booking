@@ -59,44 +59,48 @@ export default function DashboardCharts() {
     month: e?.month ?? e?.date ?? "Unknown",
     earnings: typeof e?.earnings === "number" ? e.earnings : e?.amount ?? 0,
   });
+useEffect(() => {
+  // directly set fake data (no API calls)
+  setBookingActivity([
+    { month: "Jan", bookings: 20 },
+    { month: "Feb", bookings: 35 },
+    { month: "Mar", bookings: 40 },
+    { month: "Apr", bookings: 25 },
+    { month: "May", bookings: 30 },
+    { month: "Jun", bookings: 45 },
+  ]);
+  setRegistrationTrends([
+    { month: "Jan", users: 10 },
+    { month: "Feb", users: 15 },
+    { month: "Mar", users: 12 },
+    { month: "Apr", users: 20 },
+    { month: "May", users: 18 },
+    { month: "Jun", users: 22 },
+  ]);
+  setFacilityApprovalTrend([
+    { date: "Jan", approved: 8, rejected: 2 },
+    { date: "Feb", approved: 9, rejected: 3 },
+    { date: "Mar", approved: 10, rejected: 1 },
+    { date: "Apr", approved: 7, rejected: 4 },
+    { date: "May", approved: 8, rejected: 2 },
+    { date: "Jun", approved: 9, rejected: 3 },
+  ]);
+  setMostActiveSports([
+    { name: "Football", value: 15 },
+    { name: "Tennis", value: 9 },
+    { name: "Basketball", value: 6 },
+    { name: "Swimming", value: 3 },
+  ]);
+  setEarnings([
+    { month: "Jan", earnings: 1000 },
+    { month: "Feb", earnings: 1200 },
+    { month: "Mar", earnings: 1100 },
+    { month: "Apr", earnings: 1300 },
+    { month: "May", earnings: 1250 },
+    { month: "Jun", earnings: 1400 },
+  ]);
+}, []);
 
-  useEffect(() => {
-    let isMounted = true;
-    (async () => {
-      try {
-        const [ba, ur, fa, ms, es] = await Promise.all([
-          getBookingsActivity(180),
-          getUserRegistrations(180),
-          getApprovalTrend(180),
-          getActiveSports(5),
-          getEarningsSimulation(),
-        ]);
-
-        if (!isMounted) return;
-
-        const baArr = safeArray(ba?.data || ba);
-        const urArr = safeArray(ur?.data || ur);
-        const faArr = safeArray(fa?.data || fa);
-        const msArr = safeArray(ms?.data || ms);
-        const esArr = safeArray(es?.data || es);
-
-        if (baArr.length) setBookingActivity(baArr.map((d: any) => ({ month: d.date ?? d.month, bookings: d.count ?? 0 })));
-        if (urArr.length) setRegistrationTrends(urArr.map((d: any) => ({ month: d.date ?? d.month, users: d.count ?? 0 })));
-        if (faArr.length) setFacilityApprovalTrend(faArr.map((d: any) => ({
-          date: d.date ?? d.month,
-          approved: d.approved ?? 0,
-          rejected: d.rejected ?? 0,
-        })));
-        if (msArr.length) setMostActiveSports(msArr.map(normalizeSport));
-        if (esArr.length) setEarnings(esArr.map(normalizeEarning));
-      } catch (e) {
-        console.error("Error loading dashboard charts:", e);
-      }
-    })();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
 
   const Card = ({ title, icon, children, color }: { title: string; icon: React.ReactNode; children: React.ReactNode; color: string }) => (
     <div className={`rounded-xl shadow-sm border border-gray-100 p-4 bg-gradient-to-tr from-${color}-50 to-white`}>
