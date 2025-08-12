@@ -15,12 +15,6 @@ type AdminInfo = {
   joinedAt: string;
 };
 
-type AdminStats = {
-  totalUsers: number;
-  totalFacilities: number;
-  pendingReports: number;
-};
-
 type AdminAction = {
   _id: string;
   action: string;
@@ -29,23 +23,45 @@ type AdminAction = {
 };
 
 export default function AdminProfile() {
-  const [admin, setAdmin] = useState<AdminInfo | null>(null);
-  const [stats, setStats] = useState<AdminStats | null>(null);
-  const [recentActions, setRecentActions] = useState<AdminAction[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [admin, setAdmin] = useState<AdminInfo | null>({
+    fullName: "Jane Doe",
+    email: "jane.doe@example.com",
+    role: "admin",
+    joinedAt: new Date("2023-01-15").toISOString(),
+  });
+  const [recentActions, setRecentActions] = useState<AdminAction[]>([
+    {
+      _id: "a1",
+      action: "Approved facility",
+      target: "Community Sports Complex",
+      date: new Date(Date.now() - 3600 * 1000 * 2).toISOString(), // 2 hours ago
+    },
+    {
+      _id: "a2",
+      action: "Banned user",
+      target: "user123",
+      date: new Date(Date.now() - 3600 * 1000 * 5).toISOString(), // 5 hours ago
+    },
+    {
+      _id: "a3",
+      action: "Reviewed report",
+      target: "Report #456",
+      date: new Date(Date.now() - 3600 * 1000 * 24).toISOString(), // 1 day ago
+    },
+  ]);
+  const [loading, setLoading] = useState(false); // changed to false so fake data shows immediately
   const navigate = useNavigate();
 
   const loadData = async () => {
     setLoading(true);
     try {
-      const [profileRes, statsRes, actionsRes] = await Promise.all([
+      const [profileRes, , actionsRes] = await Promise.all([
         getAdminProfile(),
-        getAdminStats(),
+        getAdminStats(), // ignoring stats now since we removed that section
         getAdminRecentActions()
       ]);
-      setAdmin(profileRes || null);
-      setStats(statsRes || null);
-      setRecentActions(Array.isArray(actionsRes) ? actionsRes : []);
+      setAdmin(profileRes || admin);
+      setRecentActions(Array.isArray(actionsRes) ? actionsRes : recentActions);
     } catch (e) {
       console.error("Error loading admin profile:", e);
     } finally {
@@ -69,28 +85,10 @@ export default function AdminProfile() {
           {admin && (
             <div className="bg-white rounded-lg shadow p-4 mb-6">
               <h2 className="text-lg font-semibold mb-2">Profile Information</h2>
-              <p><strong>Name:</strong> {admin.fullName}</p>
-              <p><strong>Email:</strong> {admin.email}</p>
-              <p className="capitalize"><strong>Role:</strong> {admin.role}</p>
-              <p><strong>Joined:</strong> {new Date(admin.joinedAt).toLocaleDateString()}</p>
-            </div>
-          )}
-
-          {/* Stats */}
-          {stats && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div className="bg-blue-100 p-4 rounded-lg shadow text-center">
-                <p className="text-2xl font-bold">{stats.totalUsers}</p>
-                <p>Total Users</p>
-              </div>
-              <div className="bg-green-100 p-4 rounded-lg shadow text-center">
-                <p className="text-2xl font-bold">{stats.totalFacilities}</p>
-                <p>Total Facilities</p>
-              </div>
-              <div className="bg-yellow-100 p-4 rounded-lg shadow text-center">
-                <p className="text-2xl font-bold">{stats.pendingReports}</p>
-                <p>Pending Reports</p>
-              </div>
+              <p><strong>Name: Ura Modi</strong> {admin.fullName}</p>
+              <p><strong>Email: ura.99@yahoo.com</strong> {admin.email}</p>
+              <p className="capitalize"><strong>Role: Admin</strong> {admin.role}</p>
+             
             </div>
           )}
 
