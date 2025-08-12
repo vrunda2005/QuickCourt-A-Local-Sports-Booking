@@ -6,7 +6,30 @@ import { Search, Ban, CheckCircle, Clock } from "lucide-react";
 export default function UserManagement() {
   const [search, setSearch] = useState("");
   const [filterRole, setFilterRole] = useState("all");
-  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [users, setUsers] = useState<AdminUser[]>([
+    // *** Fake user data added here ***
+    {
+      _id: "u1",
+      fullName: "Alice Johnson",
+      email: "alice@example.com",
+      role: "user",
+      isBanned: false,
+    },
+    {
+      _id: "u2",
+      fullName: "Bob Smith",
+      email: "bob.smith@example.com",
+      role: "owner",
+      isBanned: true,
+    },
+    {
+      _id: "u3",
+      fullName: "Carol Lee",
+      email: "carol.lee@example.com",
+      role: "admin",
+      isBanned: false,
+    },
+  ]);
   const [loading, setLoading] = useState(true);
   const [historyUserId, setHistoryUserId] = useState<string | null>(null);
   const [history, setHistory] = useState<Array<{ _id: string; date: string; slot: string; price: number; status: string }> | null>(null);
