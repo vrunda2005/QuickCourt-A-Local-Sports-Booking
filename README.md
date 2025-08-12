@@ -2,7 +2,6 @@
 
 A modern, full-stack sports venue booking application that connects sports enthusiasts with local venues. Built with React, TypeScript, Node.js, Express, and MongoDB.
 
-![QuickCourt Banner](https://images.unsplash.com/photo-1543166145-43227661d0e8?q=80&w=1600&auto=format&fit=crop)
 
 ## 🚀 Features
 
